@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
-@CrossOrigin("*") // ✅ * karo
+@CrossOrigin("*") //
 public class ChatController {
 
     private RoomRepository roomRepository;
@@ -31,7 +31,9 @@ public class ChatController {
         Message message = new Message();
         message.setContent(request.getContent());
         message.setSender(request.getSender());
-        message.setTimeStamp(java.time.LocalDateTime.now().toString()); // ✅ String
+        message.setTimeStamp(java.time.ZonedDateTime
+                .now(java.time.ZoneId.of("Asia/Kolkata"))
+                .toString());
         if (room != null) {
             room.getMessages().add(message);
             roomRepository.save(room);

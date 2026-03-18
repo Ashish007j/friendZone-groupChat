@@ -12,11 +12,13 @@ import lombok.Setter;
 public class Message {
     private String sender;
     private String content;
-    private String timeStamp; // ✅ String
+    private String timeStamp;
 
     public Message(String sender, String content) {
         this.sender = sender;
         this.content = content;
-        this.timeStamp = java.time.LocalDateTime.now().toString();
+        this.timeStamp = java.time.ZonedDateTime
+                .now(java.time.ZoneId.of("Asia/Kolkata"))
+                .toString();
     }
 }
