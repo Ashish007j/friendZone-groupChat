@@ -36,14 +36,18 @@ public class RoomController {
     public ResponseEntity<List<Room>> getAllRooms() {
         return ResponseEntity.ok(roomRepository.findAll());
     }
-
     @PostMapping
-    public ResponseEntity<?> createRoom(@RequestBody String roomId) {
+    public ResponseEntity<?> createRoom(@RequestBody Map<String, String> request) {
+
+        String roomId = request.get("roomId");
+
         if (roomRepository.findByRoomId(roomId) != null) {
             return ResponseEntity.badRequest().body("Room already exists!");
         }
+
         Room room = new Room();
         room.setRoomId(roomId);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(roomRepository.save(room));
     }
