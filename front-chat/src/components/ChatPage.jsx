@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { MdAttachFile, MdSend } from "react-icons/md";
 import { HiLogout } from "react-icons/hi";
 import useChatContext from "../context/ChatContext";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
 import toast from "react-hot-toast";

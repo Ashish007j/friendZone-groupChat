@@ -11,12 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDateTime;
-
 @Controller
-@CrossOrigin("http://localhost:5173")
+@CrossOrigin("*") // ✅ * karo
 public class ChatController {
-
 
     private RoomRepository roomRepository;
 
@@ -24,29 +21,23 @@ public class ChatController {
         this.roomRepository = roomRepository;
     }
 
-
-    //for sending and receiving messages
-    @MessageMapping("/sendMessage/{roomId}")// /app/sendMessage/roomId
-    @SendTo("/topic/room/{roomId}")//subscribe
+    @MessageMapping("/sendMessage/{roomId}")
+    @SendTo("/topic/room/{roomId}")
     public Message sendMessage(
             @DestinationVariable String roomId,
             @RequestBody MessageRequest request
     ) {
-
         Room room = roomRepository.findByRoomId(request.getRoomId());
         Message message = new Message();
         message.setContent(request.getContent());
         message.setSender(request.getSender());
-        message.setTimeStamp(LocalDateTime.now());
+        message.setTimeStamp(java.time.LocalDateTime.now().toString()); // ✅ String
         if (room != null) {
             room.getMessages().add(message);
             roomRepository.save(room);
         } else {
             throw new RuntimeException("room not found !!");
         }
-
         return message;
-
-
     }
 }

@@ -3,7 +3,7 @@ import chatIcon from "../assets/chat.png";
 import toast from "react-hot-toast";
 import { createRoomApi, joinChatApi } from "../services/RoomService";
 import useChatContext from "../context/ChatContext";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const JoinCreateChat = () => {
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ const JoinCreateChat = () => {
   async function createRoom() {
     if (validateForm()) {
       try {
-        const response = await createRoomApi(detail.roomId);
+       const response = await createRoomApi({ roomId: detail.roomId });
         toast.success("Room Created Successfully!");
         setCurrentUser(detail.userName);
         localStorage.setItem("userName", detail.userName);
