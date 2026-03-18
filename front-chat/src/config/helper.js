@@ -1,8 +1,10 @@
 export function timeAgo(date) {
   const now = new Date();
-  const past = new Date(date);
+  // ✅ ZonedDateTime string ko handle karo
+  const past = new Date(date.toString().replace(/\[.*\]$/, ""));
   const secondsAgo = Math.floor((now - past) / 1000);
 
+  if (isNaN(secondsAgo)) return "just now"; // ✅ NaN fallback
   if (secondsAgo < 60) return `${secondsAgo} seconds ago`;
   const minutesAgo = Math.floor(secondsAgo / 60);
   if (minutesAgo < 60) return `${minutesAgo} minutes ago`;
@@ -15,6 +17,3 @@ export function timeAgo(date) {
   const yearsAgo = Math.floor(monthsAgo / 12);
   return `${yearsAgo} years ago`;
 }
-
-// Example usage
-console.log(timeAgo("2023-12-01T14:00:00Z")); // Output depends on the current time
