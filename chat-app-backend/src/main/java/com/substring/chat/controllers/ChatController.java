@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
-@CrossOrigin("*") //
+
 public class ChatController {
 
     private RoomRepository roomRepository;
