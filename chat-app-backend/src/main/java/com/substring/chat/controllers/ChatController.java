@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
-
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://friend-zone-group-chat.vercel.app"
+})
 public class ChatController {
 
     private RoomRepository roomRepository;
