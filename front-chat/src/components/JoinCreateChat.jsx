@@ -221,7 +221,7 @@ const JoinCreateChat = () => {
           font-weight: 700;
           letter-spacing: 2px;
           text-transform: uppercase;
-          color: rgba(37,99,235,0.5);
+          color: #000000; /* CHANGED: black */
           margin-bottom: 8px;
           display: block;
         }
@@ -356,7 +356,7 @@ const JoinCreateChat = () => {
           text-align: center;
           margin-top: 28px;
           font-size: 11px;
-          color: rgba(59,130,246,0.3);
+          color: #000000; /* CHANGED: black */
           font-family: 'DM Sans', sans-serif;
           letter-spacing: 2px;
         }
@@ -389,7 +389,8 @@ const JoinCreateChat = () => {
             </div>
           </div>
 
-          <h1 className="title">Start Chatting Now</h1>
+          <h1 className="title">FriendZone</h1>
+          <h2 className="title">  </h2>
 
           <div className={`input-wrapper ${focused === "userName" ? "is-focused" : ""}`}>
             <label className="field-label">Your Name</label>
