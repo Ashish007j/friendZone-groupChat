@@ -16,6 +16,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
+                "https://friend-zone-group-chat-git-main-ashish007js-projects.vercel.app",
                 "https://friendzone-groupchat0-l5q216zze-ashish007js-projects.vercel.app",
                 "http://localhost:5173",  // Vite dev server
                 "http://localhost:3000"
