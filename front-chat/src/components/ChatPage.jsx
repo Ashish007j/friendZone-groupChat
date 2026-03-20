@@ -31,6 +31,7 @@ const ChatPage = () => {
   const chatBoxRef = useRef(null);
   const [stompClient, setStompClient] = useState(null);
   const [newMsgIds, setNewMsgIds] = useState(new Set());
+  const [activeUsers, setActiveUsers] = useState(1); // ✅ NEW
 
   useEffect(() => {
     async function loadMessages() {
@@ -58,6 +59,8 @@ const ChatPage = () => {
       client.connect({}, () => {
         setStompClient(client);
         toast.success("Connected!");
+
+        // Existing messages subscription
         client.subscribe(`/topic/room/${roomId}`, (message) => {
           const newMessage = JSON.parse(message.body);
           const id = Date.now() + Math.random();
@@ -71,6 +74,12 @@ const ChatPage = () => {
               return next;
             });
           }, 600);
+        });
+
+        // ✅ NEW — active users subscription
+        client.subscribe(`/topic/room/${roomId}/active-users`, (message) => {
+          const data = JSON.parse(message.body);
+          setActiveUsers(data.count);
         });
       });
     };
@@ -112,7 +121,6 @@ const ChatPage = () => {
           position: relative;
         }
 
-        /* Subtle bg pattern */
         .chat-root::before {
           content: '';
           position: fixed;
@@ -183,6 +191,31 @@ const ChatPage = () => {
           letter-spacing: 0.3px;
         }
 
+        /* ✅ NEW — active users badge */
+        .active-users-badge {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.25);
+          border-radius: 20px;
+          padding: 4px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #16a34a;
+          font-family: 'Syne', sans-serif;
+          transition: all 0.3s ease;
+        }
+
+        .active-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #22c55e;
+          display: inline-block;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+
         .header-user {
           display: flex;
           align-items: center;
@@ -245,7 +278,6 @@ const ChatPage = () => {
         .chat-main::-webkit-scrollbar-track { background: transparent; }
         .chat-main::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.2); border-radius: 4px; }
 
-        /* Date divider */
         .date-divider {
           display: flex;
           align-items: center;
@@ -270,7 +302,6 @@ const ChatPage = () => {
           background: rgba(59, 130, 246, 0.1);
         }
 
-        /* Message row */
         .msg-row {
           display: flex;
           align-items: flex-end;
@@ -321,7 +352,6 @@ const ChatPage = () => {
           word-break: break-word;
         }
 
-        /* Other's messages */
         .msg-row:not(.mine) .msg-bubble {
           background: #ffffff;
           color: #1e293b;
@@ -329,7 +359,6 @@ const ChatPage = () => {
           box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(59,130,246,0.06);
         }
 
-        /* My messages */
         .msg-row.mine .msg-bubble {
           background: linear-gradient(135deg, #3b82f6, #2563eb);
           color: #ffffff;
@@ -428,7 +457,6 @@ const ChatPage = () => {
 
         .send-btn:active { transform: scale(0.97); }
 
-        /* Empty state */
         .empty-state {
           flex: 1;
           display: flex;
@@ -440,9 +468,7 @@ const ChatPage = () => {
           padding: 60px 0;
         }
 
-        .empty-icon {
-          font-size: 48px;
-        }
+        .empty-icon { font-size: 48px; }
 
         .empty-text {
           font-family: 'Syne', sans-serif;
@@ -460,6 +486,12 @@ const ChatPage = () => {
             <div className="header-dot" />
             <span className="header-title">Room Chat</span>
             <span className="header-badge">#{roomId}</span>
+
+            {/* ✅ NEW — active users badge */}
+            <span className="active-users-badge">
+              <span className="active-dot" />
+              {activeUsers} online
+            </span>
           </div>
 
           <div className="header-user">
@@ -495,10 +527,7 @@ const ChatPage = () => {
           {messages.map((message, index) => {
             const isMe = message.sender === currentUser;
             return (
-              <div
-                key={index}
-                className={`msg-row ${isMe ? "mine" : ""}`}
-              >
+              <div key={index} className={`msg-row ${isMe ? "mine" : ""}`}>
                 <img
                   src={getAvatar(message.sender)}
                   alt={message.sender}
@@ -508,9 +537,7 @@ const ChatPage = () => {
                   {!isMe && (
                     <span className="msg-sender">{message.sender}</span>
                   )}
-                  <div className="msg-bubble">
-                    {message.content}
-                  </div>
+                  <div className="msg-bubble">{message.content}</div>
                   <span className="msg-time">{timeAgo(message.timeStamp)}</span>
                 </div>
               </div>
