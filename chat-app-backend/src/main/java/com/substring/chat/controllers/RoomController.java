@@ -36,7 +36,8 @@ public class RoomController {
     @PostMapping
     public ResponseEntity<?> createRoom(@RequestBody Map<String, String> request) {
         String roomId = request.get("roomId");
-        if (roomRepository.findByRoomId(roomId) != null) {
+
+        if (roomRepository.findFirstByRoomId(roomId) != null) {
             return ResponseEntity.badRequest().body("Room already exists!");
         }
         Room room = new Room();
@@ -44,10 +45,12 @@ public class RoomController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(roomRepository.save(room));
     }
+
     @PostMapping("/join")
     public ResponseEntity<?> joinRoom(@RequestBody Map<String, String> request) {
         String roomId = request.get("roomId");
-        Room room = roomRepository.findByRoomId(roomId);
+
+        Room room = roomRepository.findFirstByRoomId(roomId);
         if (room == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Room not found!");
         }

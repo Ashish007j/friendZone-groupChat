@@ -30,7 +30,8 @@ public class ChatController {
             @DestinationVariable String roomId,
             @RequestBody MessageRequest request
     ) {
-        Room room = roomRepository.findByRoomId(request.getRoomId());
+
+        Room room = roomRepository.findFirstByRoomId(request.getRoomId());
         Message message = new Message();
         message.setContent(request.getContent());
         message.setSender(request.getSender());
