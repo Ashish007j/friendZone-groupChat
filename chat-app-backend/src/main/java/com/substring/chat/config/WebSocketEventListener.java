@@ -32,12 +32,14 @@ public class WebSocketEventListener {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String destination = accessor.getDestination();
 
-        // Tumhara topic pattern: /topic/room/{roomId}
-        if (destination != null && destination.startsWith("/topic/room/")) {
+        // ✅ FIX: Sirf main room topic handle karo, active-users topic ignore karo
+        if (destination != null
+                && destination.startsWith("/topic/room/")
+                && !destination.contains("/active-users")) {
+
             String sessionId = accessor.getSessionId();
             String roomId = destination.replace("/topic/room/", "");
 
-            // Username header se lo (frontend se bhejenge)
             String username = accessor.getFirstNativeHeader("username");
             if (username == null) username = "user-" + sessionId.substring(0, 5);
 
@@ -72,13 +74,11 @@ public class WebSocketEventListener {
     private void broadcastCount(String roomId) {
         int count = roomActiveUsers.getOrDefault(roomId, Set.of()).size();
 
-        // Room ke andar walo ke liye
         messagingTemplate.convertAndSend(
                 "/topic/room/" + roomId + "/active-users",
                 Map.of("count", count, "roomId", roomId)
         );
 
-        // Room list page pe bhi dikhega (global)
         messagingTemplate.convertAndSend(
                 "/topic/all-rooms/active-users",
                 Map.of("count", count, "roomId", roomId)
