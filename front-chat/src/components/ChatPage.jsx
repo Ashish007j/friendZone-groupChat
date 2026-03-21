@@ -31,7 +31,7 @@ const ChatPage = () => {
   const chatBoxRef = useRef(null);
   const [stompClient, setStompClient] = useState(null);
   const [newMsgIds, setNewMsgIds] = useState(new Set());
-  const [activeUsers, setActiveUsers] = useState(1); // ✅ NEW
+  const [activeUsers, setActiveUsers] = useState(0);
 
   useEffect(() => {
     async function loadMessages() {
@@ -56,31 +56,41 @@ const ChatPage = () => {
     const connectWebSocket = () => {
       const sock = new SockJS(`${baseURL}/chat`);
       const client = Stomp.over(sock);
-      client.connect({}, () => {
+
+      // ✅ FIX 1: Connect headers mein username bhejo
+      client.connect({ username: currentUser }, () => {
         setStompClient(client);
         toast.success("Connected!");
 
-        // Existing messages subscription
-        client.subscribe(`/topic/room/${roomId}`, (message) => {
-          const newMessage = JSON.parse(message.body);
-          const id = Date.now() + Math.random();
-          newMessage._id = id;
-          setMessages((prev) => [...prev, newMessage]);
-          setNewMsgIds((prev) => new Set([...prev, id]));
-          setTimeout(() => {
-            setNewMsgIds((prev) => {
-              const next = new Set(prev);
-              next.delete(id);
-              return next;
-            });
-          }, 600);
-        });
+        // ✅ FIX 2: Messages subscribe karte waqt username header bhejo
+        client.subscribe(
+          `/topic/room/${roomId}`,
+          (message) => {
+            const newMessage = JSON.parse(message.body);
+            const id = Date.now() + Math.random();
+            newMessage._id = id;
+            setMessages((prev) => [...prev, newMessage]);
+            setNewMsgIds((prev) => new Set([...prev, id]));
+            setTimeout(() => {
+              setNewMsgIds((prev) => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+              });
+            }, 600);
+          },
+          { username: currentUser } // ✅ username header
+        );
 
-        // ✅ NEW — active users subscription
-        client.subscribe(`/topic/room/${roomId}/active-users`, (message) => {
-          const data = JSON.parse(message.body);
-          setActiveUsers(data.count);
-        });
+        // ✅ FIX 3: Active users subscribe karte waqt bhi username header bhejo
+        client.subscribe(
+          `/topic/room/${roomId}/active-users`,
+          (message) => {
+            const data = JSON.parse(message.body);
+            setActiveUsers(data.count);
+          },
+          { username: currentUser } // ✅ username header
+        );
       });
     };
     if (connected) connectWebSocket();
@@ -89,21 +99,36 @@ const ChatPage = () => {
   const sendMessage = async () => {
     if (stompClient && connected && input.trim()) {
       const message = { sender: currentUser, content: input, roomId };
-      stompClient.send(`/app/sendMessage/${roomId}`, {}, JSON.stringify(message));
+      stompClient.send(
+        `/app/sendMessage/${roomId}`,
+        {},
+        JSON.stringify(message)
+      );
       setInput("");
     }
   };
 
+  // ✅ FIX 4: Proper disconnect with callback
   function handleLogout() {
-    stompClient.disconnect();
-    setConnected(false);
-    setRoomId("");
-    setCurrentUser("");
-    navigate("/");
+    if (stompClient && stompClient.connected) {
+      stompClient.disconnect(() => {
+        setConnected(false);
+        setRoomId("");
+        setCurrentUser("");
+        navigate("/");
+      });
+    } else {
+      setConnected(false);
+      setRoomId("");
+      setCurrentUser("");
+      navigate("/");
+    }
   }
 
   const getAvatar = (name) =>
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=0369a1&textColor=ffffff`;
+    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+      name
+    )}&backgroundColor=0369a1&textColor=ffffff`;
 
   return (
     <>
@@ -191,7 +216,6 @@ const ChatPage = () => {
           letter-spacing: 0.3px;
         }
 
-        /* ✅ NEW — active users badge */
         .active-users-badge {
           display: flex;
           align-items: center;
@@ -373,7 +397,6 @@ const ChatPage = () => {
         }
 
         .msg-row.mine .msg-time { text-align: right; }
-        .msg-row.mine .msg-bubble .msg-time-inline { color: rgba(255,255,255,0.6); }
 
         /* ── INPUT BAR ── */
         .input-bar {
@@ -487,7 +510,7 @@ const ChatPage = () => {
             <span className="header-title">Room Chat</span>
             <span className="header-badge">#{roomId}</span>
 
-            {/* ✅ NEW — active users badge */}
+            {/* Active users badge */}
             <span className="active-users-badge">
               <span className="active-dot" />
               {activeUsers} online
@@ -551,7 +574,9 @@ const ChatPage = () => {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendMessage();
+              }}
               type="text"
               placeholder="Type a message..."
               className="msg-input"
