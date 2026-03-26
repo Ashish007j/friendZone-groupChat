@@ -27,7 +27,7 @@ This project demonstrates strong expertise in **Java backend development**, **re
 
 ### 🔹 Database
 
-* **MySQL**
+* **MongoDB**
 
 ### 🔹 Tools & Technologies
 
